@@ -57,14 +57,13 @@ import UserCartItemsContent from "./cart-items-content";
 function UserCartWrapper({ cartItems, setOpenCartSheet }) {
   const navigate = useNavigate();
 
-  // ✅ Calculate total correctly
   const totalCartAmount =
     cartItems && cartItems.length > 0
       ? cartItems.reduce((sum, currentItem) => {
           const price =
-            currentItem?.productId?.salePrice > 0
-              ? currentItem?.productId?.salePrice
-              : currentItem?.productId?.price;
+            currentItem?.salePrice > 0
+              ? currentItem?.salePrice
+              : currentItem?.price;
           return sum + price * currentItem?.quantity;
         }, 0)
       : 0;

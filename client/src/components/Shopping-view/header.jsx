@@ -30,7 +30,7 @@ function HeaderRightContent() {
   useEffect(() => {
     dispatch(fetchCartItems(user?.id));
   }, [dispatch])
-  // console.log(cartItems);
+
   
   return <div className='flex lg:items-center lg:flex-row flex-col gap-3'>
     <Sheet open={openCartSheet} onOpenChange={() => setOpenCartSheet(false)}>

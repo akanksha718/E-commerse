@@ -1,6 +1,11 @@
 import ProductFilter from '@/components/Shopping-view/filter'
 import { Button } from '@/components/ui/button'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuRadioItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu'
 import React, { useEffect, useState } from 'react'
 import { ArrowUpDownIcon } from 'lucide-react'
 import { DropdownMenuRadioGroup } from '@radix-ui/react-dropdown-menu'
@@ -12,6 +17,7 @@ import ShoppingProductTile from '@/components/Shopping-view/product-tile'
 import { createSearchParams, useSearchParams } from 'react-router-dom'
 import ProductDetailsDialog from '@/components/Shopping-view/product-details'
 import { addToCart, fetchCartItems } from '@/store/shop/cart-Slice'
+import { toast } from 'sonner'
 
 function createSearchParamsHelper(filtersParams) {
   const querryParams = [];
@@ -30,7 +36,7 @@ const ShoppingListing = () => {
   const { user } = useSelector(state => state.auth);
   const [filters, setFileters] = useState({});
   const [sort, setSort] = useState(null);
-  const [SearchParams, setSearchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [openDetailsDialog, setOpenDetailDialog] = useState(false);
   function handleSort(value) {
     setSort(value);
@@ -42,20 +48,21 @@ const ShoppingListing = () => {
     if (inedexOfCurrentSection === -1) {
       cpyFilters = {
         ...cpyFilters,
-        [getSectionId]: [getCurrentOption]
+        [getSectionId]: [getCurrentOption],
       };
     } else {
-      const indexOfCurrentSection = cpyFilters[getSectionId].indexOf(getCurrentOption);
-      if (indexOfCurrentSection === -1) {
+      const indexOfCurrentOption = cpyFilters[getSectionId].indexOf(getCurrentOption);
+      if (indexOfCurrentOption === -1) {
         cpyFilters[getSectionId].push(getCurrentOption);
       } else {
-        cpyFilters[getSectionId].splice(indexOfCurrentSection, 1);
+        cpyFilters[getSectionId].splice(indexOfCurrentOption, 1);
       }
 
     }
     setFileters(cpyFilters);
     sessionStorage.setItem('filters', JSON.stringify(cpyFilters));
   }
+
   function handleGetProductDetails(getCurrentProductId) {
     dispatch(fetchProductDetails(getCurrentProductId));
   }
@@ -64,15 +71,17 @@ const ShoppingListing = () => {
     dispatch(addToCart({ userId: user?.id, productId: getCurrentProductId, quantity: 1 })).then((data) => {
       if (data?.payload?.success) {
         dispatch(fetchCartItems(user?.id));
+        toast("Product is added to cart");
       }
     });
   }
-
+  
 
   useEffect(() => {
     setSort("price-lowtohigh");
     setFileters(JSON.parse(sessionStorage.getItem('filters')) || {})
   }, [])
+
 
   useEffect(() => {
     if (filters && Object.keys(filters).length > 0) {
@@ -89,6 +98,7 @@ const ShoppingListing = () => {
   useEffect(() => {
     if (productDetail !== null) setOpenDetailDialog(true);
   }, [productDetail])
+  
   return (
     <div className='grid grid-cols-1 md:grid-cols-[200px_1fr] gap-6 md:p-6'>
       <ProductFilter filters={filters} handleFilter={handleFilter} />
@@ -118,13 +128,13 @@ const ShoppingListing = () => {
         <div className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4'>
           {
             productList && productList.length > 0 ?
-              productList.map(productItem => <ShoppingProductTile handleGetProductDetails={handleGetProductDetails} key={productItem._id} product={productItem} handleAddToCart={handleAddToCart} />) : null
+              productList.map(productItem => <ShoppingProductTile handleGetProductDetails={handleGetProductDetails} product={productItem} handleAddToCart={handleAddToCart} />) : null
           }
         </div>
       </div>
       <ProductDetailsDialog open={openDetailsDialog} setOpen={setOpenDetailDialog} productDetails={productDetail} />
     </div>
-  )
+  );
 }
 
 export default ShoppingListing
